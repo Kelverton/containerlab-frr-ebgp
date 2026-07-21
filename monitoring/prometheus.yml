@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'blackbox-icmp'
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+          - 172.20.20.10   # frr-router01
+          - 172.20.20.20   # frr-router02
+          - 172.20.20.30   # frr-router03
+          - 172.20.20.40   # frr-router04
+          - 172.20.20.51   # pc1
+          - 172.20.20.52   # pc2
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - 'frr-router01:9100'
+          - 'frr-router02:9100'
+          - 'frr-router03:9100'
+          - 'frr-router04:9100'

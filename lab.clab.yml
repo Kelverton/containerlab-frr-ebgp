@@ -1,0 +1,87 @@
+name: lab-netdevops-v2
+
+mgmt:
+  network: clab-mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  defaults:
+    kind: linux
+    image: frrouting/frr:v8.4.0
+    binds:
+      - ./frr/daemons:/etc/frr/daemons:ro
+
+  nodes:
+    frr-router01:
+      mgmt-ipv4: 172.20.20.10
+      binds:
+        - ./frr/frr-router01.conf:/etc/frr/frr.conf:rw
+
+    frr-router02:
+      mgmt-ipv4: 172.20.20.20
+      binds:
+        - ./frr/frr-router02.conf:/etc/frr/frr.conf:rw
+
+    frr-router03:
+      mgmt-ipv4: 172.20.20.30
+      binds:
+        - ./frr/frr-router03.conf:/etc/frr/frr.conf:rw
+
+    frr-router04:
+      mgmt-ipv4: 172.20.20.40
+      binds:
+        - ./frr/frr-router04.conf:/etc/frr/frr.conf:rw
+
+    pc1:
+      image: wbitt/network-multitool:latest
+      mgmt-ipv4: 172.20.20.51
+      exec:
+        - ip addr add 192.168.1.10/24 dev eth1
+        - ip route add default via 192.168.1.1
+
+    pc2:
+      image: wbitt/network-multitool:latest
+      mgmt-ipv4: 172.20.20.52
+      exec:
+        - ip addr add 192.168.3.10/24 dev eth1
+        - ip route add default via 192.168.3.1
+
+    pc3:
+      image: wbitt/network-multitool:latest
+      mgmt-ipv4: 172.20.20.53
+      exec:
+        - ip addr add 192.168.2.10/24 dev eth1
+        - ip route add default via 192.168.2.1
+
+    pc4:
+      image: wbitt/network-multitool:latest
+      mgmt-ipv4: 172.20.20.54
+      exec:
+        - ip addr add 192.168.4.10/24 dev eth1
+        - ip route add default via 192.168.4.1
+
+    prometheus:
+      image: prom/prometheus:latest
+      mgmt-ipv4: 172.20.20.100
+      binds:
+        - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+    blackbox:
+      image: prom/blackbox-exporter:latest
+      mgmt-ipv4: 172.20.20.101
+
+    grafana:
+      image: grafana/grafana:latest
+      mgmt-ipv4: 172.20.20.102
+      binds:
+        - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+  links:
+    - endpoints: ["frr-router01:eth1", "frr-router02:eth1"]
+    - endpoints: ["frr-router02:eth2", "frr-router04:eth1"]
+    - endpoints: ["frr-router04:eth2", "frr-router03:eth1"]
+    - endpoints: ["frr-router03:eth2", "frr-router01:eth2"]
+    - endpoints: ["pc1:eth1", "frr-router01:eth3"]
+    - endpoints: ["pc2:eth1", "frr-router03:eth3"]
+    - endpoints: ["pc3:eth1", "frr-router02:eth3"]
+    - endpoints: ["pc4:eth1", "frr-router04:eth3"]

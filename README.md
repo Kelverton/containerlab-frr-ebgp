@@ -37,9 +37,12 @@ sudo systemctl start docker
 
 ### 2. Instalar o Containerlab
 ```bash
-curl -sL https://containerlab.dev | sudo bash -s -- install-containerlab
+curl -sL https://containerlab.dev | sudo bash -s -- install-containerlab 
 ```
-
+OU
+```
+bash -c "$(curl -sL https://get.containerlab.dev)"
+``
 ---
 
 ##  Como Rodar o Laboratório
